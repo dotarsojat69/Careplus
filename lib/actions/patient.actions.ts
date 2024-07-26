@@ -3,6 +3,7 @@
 import { ID, Query } from "node-appwrite";
 import { BUCKET_ID, DATABASE_ID, databases, ENDPOINT, PATIENT_COLLECTION_ID, PROJECT_ID, storage, users } from "../appwrite.config"
 import { parseStringify } from "../utils"
+import { InputFile } from "node-appwrite/file"
 
 export const createUser = async (user: CreateUserParams) => {
     try {
@@ -50,7 +51,7 @@ export const registerPatient = async ({
       if (identificationDocument) {
         const inputFile =
           identificationDocument &&
-          InputFile.fromBlob(
+          InputFile.fromBuffer(
             identificationDocument?.get("blobFile") as Blob,
             identificationDocument?.get("fileName") as string
           );
@@ -75,5 +76,22 @@ export const registerPatient = async ({
       return parseStringify(newPatient);
     } catch (error) {
       console.error("An error occurred while creating a new patient:", error);
+    }
+  };
+
+  export const getPatient = async (userId: string) => {
+    try {
+      const patients = await databases.listDocuments(
+        DATABASE_ID!,
+        PATIENT_COLLECTION_ID!,
+        [Query.equal("userId", [userId])]
+      );
+  
+      return parseStringify(patients.documents[0]);
+    } catch (error) {
+      console.error(
+        "An error occurred while retrieving the patient details:",
+        error
+      );
     }
   };
